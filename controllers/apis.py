@@ -5,7 +5,7 @@ import platform
 MYSQL_HOST     = "iam007.cskkndpfwwgp.ap-northeast-1.rds.amazonaws.com"
 MYSQL_USERNAME = "jiangerji"
 MYSQL_PASSWORD = "eMBWzH5SIFJw5I4c"
-MYSQL_DATABASE = "iam007"
+MYSQL_DATABASE = "baidu"
 
 if platform.system() == 'Windows':
     MYSQL_USERNAME = "root"
