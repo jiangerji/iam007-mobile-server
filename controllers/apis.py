@@ -1,10 +1,17 @@
 import json
 import time
+import platform
 
-MYSQL_USERNAME = "root"
-MYSQL_PASSWORD = "123456"
-MYSQL_HOST = "localhost"
-MYSQL_DATABASE = "test"
+MYSQL_HOST     = "iam007.cskkndpfwwgp.ap-northeast-1.rds.amazonaws.com"
+MYSQL_USERNAME = "jiangerji"
+MYSQL_PASSWORD = "eMBWzH5SIFJw5I4c"
+MYSQL_DATABASE = "iam007"
+
+if platform.system() == 'Windows':
+    MYSQL_USERNAME = "root"
+    MYSQL_PASSWORD = "123456"
+    MYSQL_HOST = "localhost"
+    MYSQL_DATABASE = "test"
 
 PRODUCT_ARTICEL_URL = "http://iam007.cn/index.php/14-product-category/%s-%s"
 NEWS_ARTICEL_URL = "http://iam007.cn/index.php/detail/%s-%s"
