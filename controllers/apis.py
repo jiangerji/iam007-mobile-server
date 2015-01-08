@@ -49,7 +49,7 @@ def convertBuyUrl(buyUrl):
 """
 获取当前最新的产品列表，最多返回4个
 """
-def lastest():
+def latest():
     global dal
     preTime = time.time()
     _init()
@@ -60,7 +60,7 @@ def lastest():
 
     limit = int(request.vars.get("limit", 4))
 
-    command = 'select a.id, a.title, a.alias, c.buy_url, b.images, a.catid from erji_content a join erji_tz_portfolio_xref_content b on a.state=1 and a.catid = 14 and a.id=b.contentid join products c on c.product_title = a.title and c.buy_url != "" order by a.created desc limit 0, 10;'
+    command = 'select a.id, a.title, a.alias, c.buy_url, b.images, a.catid, a.hits, a.introtext from erji_content a join erji_tz_portfolio_xref_content b on a.state=1 and a.catid = 14 and a.id=b.contentid join products c on c.product_title = a.title and c.buy_url != "" order by a.created desc limit 0, 10;'
 
     lastestProducts = dal.executesql(command)
 
@@ -77,6 +77,8 @@ def lastest():
         jsonProduct["b"] = convertBuyUrl(product[3]) # product buy url
         jsonProduct["t"] = os.path.basename(product[4]) # product thumbnail
         jsonProduct["c"] = product[5] # content category id
+        jsonProduct["h"] = product[6] # content hits
+        jsonProduct["it"] = product[7] # content introduction
         
         jsonProducts.append(jsonProduct)
 
