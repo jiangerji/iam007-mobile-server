@@ -170,6 +170,35 @@ def ads():
     print "ads cost:", (time.time() - preTime)
     return json.dumps(result)
 
+"""
+获取某个content的详细内容
+"""
+def detail():
+    global dal
+
+    preTime = time.time()
+
+    _init()
+    parseRequest()
+    contentId = int(request.vars.get("contentid", -1))
+    print contentId
+    if contentId == -1:
+        return ""
+
+    command = 'select a.id, a.`fulltext`, b.product_thumbnails from erji_content a join products b on a.id = %d and a.title = b.product_title and b.buy_url != "";'%contentId
+    print command
+    products = dal.executesql(command)
+    result = {}
+    if len(products) > 0:
+        product = products[0]
+        
+        result['i'] = product[0]
+        result['f'] = product[1]
+        result['ts'] = product[2]
+
+    return json.dumps(result)
+
+
 #############################################################################
 ############################下面的接口都是无效的#############################
 #############################################################################
