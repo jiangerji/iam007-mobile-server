@@ -17,6 +17,7 @@ PRODUCT_ARTICEL_URL = "http://iam007.cn/index.php/14-product-category/%s-%s"
 NEWS_ARTICEL_URL = "http://iam007.cn/index.php/detail/%s-%s"
 EVALUATION_ARTICEL_URL = "http://iam007.cn/index.php/evaluation/item/%s-%s"
 
+
 """
 select erji_content.id, erji_content.title, erji_tz_portfolio_xref_content.images, c.buy_url from erji_content, erji_tz_portfolio_xref_content, (select erji_content.id, products.buy_url from erji_content, products where erji_content.state=1 and erji_content.title = products.product_name and erji_content.catid=14) c where erji_content.id = erji_tz_portfolio_xref_content.id and erji_content.id = c.id;
 """
@@ -32,6 +33,18 @@ def _init():
         """
         command = "mysql://%s:%s@%s/%s"%(MYSQL_USERNAME, MYSQL_PASSWORD, MYSQL_HOST, MYSQL_DATABASE)
         dal = DAL(command)
+
+def convertBuyUrl(buyUrl):
+    try:
+        if buyUrl.find("item.jd.com") != -1:
+            endIndex = buyUrl.rfind('.')
+            startIndex = buyUrl.rfind('/')
+            itemId = buyUrl[startIndex+1:endIndex]
+            buyUrl = "http://m.jd.com/product/%s.html"%itemId
+    except Exception, e:
+        pass
+
+    return buyUrl
 
 """
 获取当前最新的产品列表，最多返回4个
@@ -61,15 +74,8 @@ def lastest():
         jsonProduct["n"] = product[1] # product name
         # 文章的连接
         jsonProduct['u'] = PRODUCT_ARTICEL_URL%(str(product[0]), product[2])
-        jsonProduct["b"] = product[3] # product buy url
-
-        jsonProduct["t"] = "" # product thumbnail
-        t = os.path.splitext(os.path.basename(product[4]))
-        if type(t) == type(()):
-            jsonProduct["t"] = t[0]
-        else:
-            jsonProduct["t"] = t
-
+        jsonProduct["b"] = convertBuyUrl(product[3]) # product buy url
+        jsonProduct["t"] = os.path.basename(product[4]) # product thumbnail
         jsonProduct["c"] = product[5] # content category id
         
         jsonProducts.append(jsonProduct)
@@ -104,15 +110,8 @@ def hotest():
         jsonProduct["n"] = product[1] # product title
         # 文章的连接
         jsonProduct['u'] = PRODUCT_ARTICEL_URL%(str(product[0]), product[2])
-        jsonProduct["b"] = product[3] # product buy url
-
-        jsonProduct["t"] = "" # product thumbnail
-        t = os.path.splitext(os.path.basename(product[4]))
-        if type(t) == type(()):
-            jsonProduct["t"] = t[0]
-        else:
-            jsonProduct["t"] = t
-
+        jsonProduct["b"] = convertBuyUrl(product[3]) # product buy url
+        jsonProduct["t"] = os.path.basename(product[4]) # product thumbnail
         jsonProduct["c"] = product[5]
         jsonProduct["h"] = product[6]
         
@@ -159,15 +158,8 @@ def ads():
         else:
             continue
 
-        jsonProduct["b"] = ad[3] # content buy url
-
-        jsonProduct["t"] = "" # content thumbnail
-        t = os.path.splitext(os.path.basename(ad[4]))
-        if type(t) == type(()):
-            jsonProduct["t"] = t[0]
-        else:
-            jsonProduct["t"] = t
-
+        jsonProduct["b"] = convertBuyUrl(ad[3]) # content buy url
+        jsonProduct["t"] = os.path.basename(ad[4]) # product thumbnail
         jsonProduct["h"] = ad[6]
         
         jsonAds.append(jsonProduct)
