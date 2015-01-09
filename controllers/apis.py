@@ -1,6 +1,7 @@
 import json
 import time
 import platform
+import HTMLParser
 
 MYSQL_HOST     = "iam007.cskkndpfwwgp.ap-northeast-1.rds.amazonaws.com"
 MYSQL_USERNAME = "jiangerji"
@@ -17,6 +18,9 @@ PRODUCT_ARTICEL_URL = "http://iam007.cn/index.php/14-product-category/%s-%s"
 NEWS_ARTICEL_URL = "http://iam007.cn/index.php/detail/%s-%s"
 EVALUATION_ARTICEL_URL = "http://iam007.cn/index.php/evaluation/item/%s-%s"
 
+PRODUCT_ARTICEL_URL = "http://iam007.cn:801/iam007/apis/article?contentid=%s"
+if platform.system() == 'Windows':
+    PRODUCT_ARTICEL_URL = "http://192.168.41.101:8000/iam007/apis/article?contentid=%s"
 
 """
 select erji_content.id, erji_content.title, erji_tz_portfolio_xref_content.images, c.buy_url from erji_content, erji_tz_portfolio_xref_content, (select erji_content.id, products.buy_url from erji_content, products where erji_content.state=1 and erji_content.title = products.product_name and erji_content.catid=14) c where erji_content.id = erji_tz_portfolio_xref_content.id and erji_content.id = c.id;
@@ -73,7 +77,7 @@ def latest():
         jsonProduct["i"] = product[0] # content id
         jsonProduct["n"] = product[1] # product name
         # 文章的连接
-        jsonProduct['u'] = PRODUCT_ARTICEL_URL%(str(product[0]), product[2])
+        jsonProduct['u'] = PRODUCT_ARTICEL_URL%(str(product[0]))
         jsonProduct["b"] = convertBuyUrl(product[3]) # product buy url
         jsonProduct["t"] = os.path.basename(product[4]) # product thumbnail
         jsonProduct["c"] = product[5] # content category id
@@ -111,7 +115,7 @@ def hotest():
         jsonProduct["i"] = product[0] # content id
         jsonProduct["n"] = product[1] # product title
         # 文章的连接
-        jsonProduct['u'] = PRODUCT_ARTICEL_URL%(str(product[0]), product[2])
+        jsonProduct['u'] = PRODUCT_ARTICEL_URL%(str(product[0]))
         jsonProduct["b"] = convertBuyUrl(product[3]) # product buy url
         jsonProduct["t"] = os.path.basename(product[4]) # product thumbnail
         jsonProduct["c"] = product[5]
@@ -154,7 +158,7 @@ def ads():
         if categoryId == 8:
             jsonProduct['u'] = NEWS_ARTICEL_URL%(str(ad[0]), ad[2])
         elif categoryId == 14:
-            jsonProduct['u'] = PRODUCT_ARTICEL_URL%(str(ad[0]), ad[2])
+            jsonProduct['u'] = PRODUCT_ARTICEL_URL%(str(ad[0]))
         elif categoryId == 15:
             jsonProduct['u'] = EVALUATION_ARTICEL_URL%(str(ad[0]), ad[2])
         else:
@@ -171,9 +175,47 @@ def ads():
     return json.dumps(result)
 
 """
-获取某个content的详细内容
+获取某个content的详细内容 TODO
 """
 def detail():
+    global dal
+
+    preTime = time.time()
+
+    _init()
+    parseRequest()
+    contentId = int(request.vars.get("contentid", -1))
+    category = request.vars.get("catid", "")
+    if contentId == -1 or len(category) == 0:
+        return "参数错误"
+
+    # 需要获取
+    # content id
+    # content category id
+    # content thumbnails
+    # content introduction
+    command = ""
+    if category == "14":
+        command = 'select a.id, a.introtext, b.product_thumbnails from erji_content a join products b on a.id = %d and a.title = b.product_title;'%contentId
+
+    result = {}
+    if command is None or len(command) == 0:
+        return json.dumps(result)
+
+    products = dal.executesql(command)
+    if len(products) > 0:
+        product = products[0]
+        
+        result['i'] = product[0]
+        result['it'] = product[1]
+        result['ts'] = eval(product[2])
+
+    return json.dumps(result)
+
+"""
+获取某个article的页面
+"""
+def article():
     global dal
 
     preTime = time.time()
@@ -185,18 +227,20 @@ def detail():
     if contentId == -1:
         return ""
 
-    command = 'select a.id, a.`fulltext`, b.product_thumbnails from erji_content a join products b on a.id = %d and a.title = b.product_title and b.buy_url != "";'%contentId
-    print command
+    command = 'select a.`fulltext` from erji_content a where a.id=%s;'%contentId
     products = dal.executesql(command)
-    result = {}
     if len(products) > 0:
-        product = products[0]
-        
-        result['i'] = product[0]
-        result['f'] = product[1]
-        result['ts'] = product[2]
+        html_parser = HTMLParser.HTMLParser()
+        articleDetail = html_parser.unescape(products[0][0])
+        startIndex = articleDetail.find('jiangerji')
+        if startIndex >= 0:
+            startIndex = articleDetail.find('</p>')
+            if startIndex >= 0:
+                articleDetail = articleDetail[startIndex+len('</p>'):]
+        return dict(content=XML(articleDetail))
 
-    return json.dumps(result)
+    return "error"
+    
 
 
 #############################################################################
