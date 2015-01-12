@@ -12,7 +12,7 @@ if platform.system() == 'Windows':
     MYSQL_USERNAME = "root"
     MYSQL_PASSWORD = "123456"
     MYSQL_HOST = "localhost"
-    MYSQL_DATABASE = "test"
+    MYSQL_DATABASE = "baidu"
 
 PRODUCT_ARTICEL_URL = "http://iam007.cn/index.php/14-product-category/%s-%s"
 NEWS_ARTICEL_URL = "http://iam007.cn/index.php/detail/%s-%s"
@@ -68,7 +68,7 @@ def latest():
     limit = int(request.vars.get("limit", 4))
     pn = int(request.vars.get("pn", 0))
     catType = request.vars.get("cat", "product")
-    catids = ["14"]
+    catids = ["14", "8"]
     if catType == "all":
         catids = ["8", "14", "15"]
     elif catType == "news":
@@ -207,6 +207,8 @@ def detail():
     command = ""
     if category == "14":
         command = 'select a.id, a.introtext, b.product_thumbnails from erji_content a join products b on a.id = %d and a.title = b.product_title;'%contentId
+    elif category == "8":
+        command = 'select a.id, a.introtext, b.thumbnails from erji_content a join news b on a.id = %d and a.title = b.title;'%contentId
 
     result = {}
     if command is None or len(command) == 0:
@@ -218,7 +220,10 @@ def detail():
         
         result['i'] = product[0]
         result['it'] = product[1]
-        result['ts'] = eval(product[2])
+        if category == "14":
+            result['ts'] = eval(product[2])
+        elif category == "8":
+            result['ts'] = [product[2]]
 
     return json.dumps(result)
 
