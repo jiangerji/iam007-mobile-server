@@ -39,6 +39,8 @@ def _init():
         dal = DAL(command)
 
 def convertBuyUrl(buyUrl):
+    if buyUrl is None:
+        buyUrl = ""
     try:
         if buyUrl.find("item.jd.com") != -1:
             endIndex = buyUrl.rfind('.')
@@ -48,7 +50,8 @@ def convertBuyUrl(buyUrl):
     except Exception, e:
         pass
 
-    return buyUrl
+    html_parser = HTMLParser.HTMLParser()
+    return html_parser.unescape(buyUrl)
 
 """
 获取当前最新的产品列表，最多返回4个
@@ -63,8 +66,15 @@ def latest():
     parseRequest()
 
     limit = int(request.vars.get("limit", 4))
+    pn = int(request.vars.get("pn", 0))
+    catType = request.vars.get("cat", "product")
+    catids = ["14"]
+    if catType == "all":
+        catids = ["8", "14", "15"]
+    elif catType == "news":
+        catids = ["8"]
 
-    command = 'select a.id, a.title, a.alias, c.buy_url, b.images, a.catid, a.hits, a.introtext from erji_content a join erji_tz_portfolio_xref_content b on a.state=1 and a.catid = 14 and a.id=b.contentid join products c on c.product_title = a.title and c.buy_url != "" order by a.created desc limit 0, 10;'
+    command = 'select a.id, a.title, a.alias, c.buy_url, b.images, a.catid, a.hits, a.introtext from erji_content a join erji_tz_portfolio_xref_content b on a.state=1 and a.catid in (%s) and a.id=b.contentid left join products c on c.product_title = a.title order by a.created desc limit %d, %d;'%(",".join(catids), pn*limit, (pn+1)*limit)
 
     lastestProducts = dal.executesql(command)
 
@@ -242,6 +252,79 @@ def article():
     return "error"
     
 
+import os
+"""
+http://iam007.cn:801/iam007/apis/version?type=android
+获取当前版本更新信息
+type: ios或者android
+
+"""
+def version():
+    parseRequest()
+
+    platform = request.vars.get("type", "")
+    version = request.vars.get("version", "")
+
+    result = {}
+    result["state"] = 0
+
+    if len(platform) == 0:
+        result['state'] = 1
+        return json.dumps(result)
+
+    # TODO
+    # 判断version是否需要更新
+
+    result["state"] = 1 # 1表示需要更新， 0表示不需要更新，其他表示错误
+    result["version"] = "1.0.1"                              # 版本号
+    result["forceUpdate"] = False                            # 是否为强制更新
+    result["updateShortLog"] = "这是一次假的更新。\nhaha ~~" # 此次更新的简要描述
+    result["updateDetailLog"] = "http://www.baidu.com"       # 此次更新的详细描述的网页地址
+    result["downUrl"] = "http://www.baidu.com"               # APK文件的下载地址
+
+    return json.dumps(result)
+
+"""
+关注某个content
+"""
+def collect():
+    _init()
+    parseRequest()
+    contentid = int(request.vars.get("contentid", -1))
+    uid = request.vars.get("uid", "")
+
+    result = {}
+    result["state"] = 0
+
+    if len(uid) == 0 or contentid == -1:
+        result["state"] = -1
+        return json.dumps(result)
+
+    return json.dumps(result)
+
+
+"""
+取消关注某个content
+"""
+def uncollect():
+    _init()
+    parseRequest()
+    contentid = int(request.vars.get("contentid", -1))
+    uid = request.vars.get("uid", "")
+
+    result = {}
+    result["state"] = 0
+
+    if len(uid) == 0 or contentid == -1:
+        result["state"] = -1
+        return json.dumps(result)
+
+    return json.dumps(result)
+
+
+
+
+
 
 #############################################################################
 ############################下面的接口都是无效的#############################
@@ -384,35 +467,6 @@ def channel():
 
         result = json.dumps(jsonRoom)
     return result
-
-import os
-"""
-http://54.64.105.44/wanketv/live/version?type=android
-
-获取当前版本更新信息
-
-type: ios或者android
-
-"""
-def version():
-    parseRequest()
-    platform = request.vars.get("type", "")
-
-    result = {}
-    result["error"] = 0
-
-    if len(platform) == 0:
-        return
-
-    result["error"] = 0
-
-    result["version"] = "1.0.1"
-    result["forceUpdate"] = False
-    result["updateShortLog"] = "这是一次假的更新。\nhaha ~~"
-    result["updateDetailLog"] = "http://www.baidu.com"
-    result["downUrl"] = "http://www.baidu.com"
-
-    return json.dumps(result)
 
 """
 取消对房间的订阅
