@@ -260,7 +260,70 @@ def article():
         return dict(content=XML(articleDetail))
 
     return "error"
-    
+
+def plugin():
+    helloworld = {
+      "id": "helloworld",                      # plugin unique id
+      "name":"helloworld test 1",              # plugin name
+      "desc":"this is a plugin test example!", # plugin description
+      "icon":"http://192.168.41.101:8000/iam007/static/helloworld.png", # plugin icon
+      # plugin files
+      #"files": [{
+      #  "id": "helloworld",
+      "md5": "e4cd74bcdae8e6dde0d44aad10334f55",
+      "url": "http://192.168.41.101:8000/iam007/static/sample.helloworld.apk",
+      "type":"1", # plugin type, useless current
+      "forceUpdate": False, # 该版本是否需要强制更新
+      #}],
+      # the fragments defined in plugins
+      #"fragments": [
+        # the first fragment is the launch fragment
+      #  {
+      #    "host": "helloworld", # launch action id 
+      #    "name": "sample.helloworld.HelloFragment",    # the fragment's package class name
+      #    "code": "sample.helloworld.20130703.1"
+      #  },
+      #  {
+      #    "host": "pickname",
+      #    "name": "sample.helloworld.PickerFragment",
+      #    "code": "sample.helloworld.20130703.1"
+      #  }
+      #],
+      "version": "20130703.1"   # plugin version
+    }
+
+    global dal
+    preTime = time.time()
+
+    _init()
+    parseRequest()
+
+    pluginsList = []
+
+    fileFormat = 'http://192.168.41.101:8000/iam007/static/plugins/%s/%s'
+
+    command = 'select * from plugins_android where state=1'
+    plugins = dal.executesql(command)
+    if len(plugins) > 0:
+        for plugin in plugins:
+            (pluginId, pluginName, pluginDesc, pluginIcon, pluginUrl, pluginMD5, pluginForceUpdate, pluginVersion, pluginType, pluginState) = plugin
+            pluginValue = {}
+            pluginValue["id"] = pluginId
+            pluginValue["name"] = pluginName
+            pluginValue["desc"] = pluginDesc
+            pluginValue["icon"] = fileFormat%(pluginId, pluginIcon)
+            pluginValue["url"] = fileFormat%(pluginId, pluginUrl)
+            pluginValue["md5"] = pluginMD5
+            pluginValue["forceUpdate"] = pluginForceUpdate
+            pluginValue["version"] = pluginVersion
+            pluginValue["type"] = pluginType
+            pluginsList.append(pluginValue)
+
+    result = {}
+    result['e'] = 0
+    result['d'] = pluginsList
+
+    return json.dumps(result)
 
 import os
 """
