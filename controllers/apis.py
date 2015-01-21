@@ -262,6 +262,7 @@ def article():
     return "error"
 
 def plugin():
+    """
     helloworld = {
       "id": "helloworld",                      # plugin unique id
       "name":"helloworld test 1",              # plugin name
@@ -291,6 +292,7 @@ def plugin():
       #],
       "version": "20130703.1"   # plugin version
     }
+    """
 
     global dal
     preTime = time.time()
@@ -300,7 +302,9 @@ def plugin():
 
     pluginsList = []
 
-    fileFormat = 'http://192.168.41.101:8000/iam007/static/plugins/%s/%s'
+    fileFormat = 'http://iam007.cn:801/iam007/static/plugins/%s/%s'
+    if platform.system() == 'Windows':
+        fileFormat = 'http://192.168.41.101:8000/iam007/static/plugins/%s/%s'
 
     command = 'select * from plugins_android where state=1'
     plugins = dal.executesql(command)
