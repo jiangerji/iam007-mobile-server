@@ -49,12 +49,12 @@ def parsePlugin(pluginDir, mysqlCur):
     print "=======Parse", pluginDir
     pluginConfig = os.path.join(pluginDir, "plugin.config")
 
-    values = eval(open(pluginConfig).read())
+    values = eval(open(pluginConfig).read().encode('utf8')) #
     pluginId = values['id']
     pluginName = values['name']
     pluginDesc = values['desc']
     pluginIcon = values['icon']
-    pluginMD5  = values['md5']
+    pluginMD5  = values.get('md5', "")
     pluginUrl  = values['url']
     pluginMD5 = md5(open(os.path.join(pluginDir, pluginUrl)).read())
     pluginType = values['type']
