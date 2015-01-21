@@ -88,6 +88,9 @@ def main():
          print "Mysql Error %d: %s" % (e.args[0], e.args[1])
          exception = e
 
+    createCommand = 'create table if not exists `plugins_android1` (`id` char(20) not null, `name` text not null, `description` text null, `icon` text not null, `url` text not null, `md5_value` text not null, `force_update` int null default 0, `version` text null, `type` int null default 0, `state` int null default 1);'
+    mysqlCur.execute(createCommand)
+
     command = 'TRUNCATE `plugins_android`;'
     mysqlCur.execute(command)
 
