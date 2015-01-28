@@ -20,7 +20,7 @@ EVALUATION_ARTICEL_URL = "http://iam007.cn/index.php/evaluation/item/%s-%s"
 
 PRODUCT_ARTICEL_URL = "http://iam007.cn:801/iam007/apis/article?contentid=%s"
 if platform.system() == 'Windows':
-    PRODUCT_ARTICEL_URL = "http://192.168.41.101:8000/iam007/apis/article?contentid=%s"
+    PRODUCT_ARTICEL_URL = "http://192.168.54.9:8000/iam007/apis/article?contentid=%s"
 
 """
 select erji_content.id, erji_content.title, erji_tz_portfolio_xref_content.images, c.buy_url from erji_content, erji_tz_portfolio_xref_content, (select erji_content.id, products.buy_url from erji_content, products where erji_content.state=1 and erji_content.title = products.product_name and erji_content.catid=14) c where erji_content.id = erji_tz_portfolio_xref_content.id and erji_content.id = c.id;
@@ -267,12 +267,12 @@ def plugin():
       "id": "helloworld",                      # plugin unique id
       "name":"helloworld test 1",              # plugin name
       "desc":"this is a plugin test example!", # plugin description
-      "icon":"http://192.168.41.101:8000/iam007/static/helloworld.png", # plugin icon
+      "icon":"http://192.168.54.9:8000/iam007/static/helloworld.png", # plugin icon
       # plugin files
       #"files": [{
       #  "id": "helloworld",
       "md5": "e4cd74bcdae8e6dde0d44aad10334f55",
-      "url": "http://192.168.41.101:8000/iam007/static/sample.helloworld.apk",
+      "url": "http://192.168.54.9:8000/iam007/static/sample.helloworld.apk",
       "type":"1", # plugin type, useless current
       "forceUpdate": False, # 该版本是否需要强制更新
       #}],
@@ -304,7 +304,7 @@ def plugin():
 
     fileFormat = 'http://iam007.cn:801/iam007/static/plugins/%s/%s'
     if platform.system() == 'Windows':
-        fileFormat = 'http://192.168.41.101:8000/iam007/static/plugins/%s/%s'
+        fileFormat = 'http://192.168.54.9:8000/iam007/static/plugins/%s/%s'
 
     command = 'select * from plugins_android where state=1'
     plugins = dal.executesql(command)
@@ -398,9 +398,39 @@ def uncollect():
 
     return json.dumps(result)
 
+"""
+获取推荐的商品列表
+"""
+def getProducts():
+    global dal
+    _init()
+    parseRequest()
 
+    limit = int(request.vars.get("limit", 20))
+    pn = int(request.vars.get("pn", 0))
 
+    command = 'select `id`, product_id, product_name, product_title, product_cover_img, product_price, product_price_tag, buy_url from jd_products limit %d, %d;'%(pn*limit, limit)
+    products = dal.executesql(command)
+    products_list = []
+    for product in products:
+        (_id, product_id, product_name, product_title, product_cover_img, product_price, product_price_tag, buy_url) = product
+        product_json = {}
+        product_json['id'] = _id
+        product_json['name'] = product_name
+        product_json['title'] = product_title
+        product_json['cover'] = product_cover_img
+        product_json['price'] = product_price
+        product_json['priceTag'] = product_price_tag
+        product_json['buyUrl'] = convertBuyUrl(buy_url)
+        product_json['source'] = 1
+        product_json['detail'] = "http://www.baidu.com"
+        products_list.append(product_json)
 
+    result = {}
+    result['e'] = 0
+    result['d'] = products_list
+
+    return json.dumps(result)
 
 
 #############################################################################
@@ -891,7 +921,7 @@ def imgfile():
     filepath = os.path.join(filepath, "images")
     filepath = os.path.join(filepath, "cover")
     filepath = os.path.join(filepath, filename)
-    url = "http://192.168.41.101:9257/wanketv/static/images/cover/"+filename
+    url = "http://192.168.54.9:9257/wanketv/static/images/cover/"+filename
     redirect(url)
 
 def parseRequest():
