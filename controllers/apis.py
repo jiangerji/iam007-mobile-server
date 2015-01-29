@@ -330,7 +330,7 @@ def plugin():
 
     fileFormat = 'http://iam007.cn:801/iam007/static/plugins/%s/%s'
     if platform.system() == 'Windows':
-        fileFormat = 'http://"+LOCAL_DEBUG_HOST+"/iam007/static/plugins/%s/%s'
+        fileFormat = 'http://'+LOCAL_DEBUG_HOST+'/iam007/static/plugins/%s/%s'
 
     command = 'select * from plugins_android where state=1'
     plugins = dal.executesql(command)
