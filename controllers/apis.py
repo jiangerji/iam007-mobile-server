@@ -27,6 +27,7 @@ if platform.system() == 'Windows':
 PRODUCT_DETAIL_URL = "http://iam007.cn:801/iam007/apis/product?id=%s"
 if platform.system() == 'Windows':
     PRODUCT_DETAIL_URL = "http://"+LOCAL_DEBUG_HOST+"/iam007/apis/product?id=%s"
+# PRODUCT_DETAIL_URL = "http://item.m.jd.com/detail/%d.html?resourceType=&resourceValue=&sid=3cdaebd9e0010bfa530ac6dd2754422f"
 
 """
 select erji_content.id, erji_content.title, erji_tz_portfolio_xref_content.images, c.buy_url from erji_content, erji_tz_portfolio_xref_content, (select erji_content.id, products.buy_url from erji_content, products where erji_content.state=1 and erji_content.title = products.product_name and erji_content.catid=14) c where erji_content.id = erji_tz_portfolio_xref_content.id and erji_content.id = c.id;
@@ -282,7 +283,7 @@ def product():
     if len(products) > 0:
         html_parser = HTMLParser.HTMLParser()
         articleDetail = html_parser.unescape(products[0][0])
-        return dict(content=XML(products[0][0]))
+        return dict(content=XML(articleDetail))
 
     return "error"
 
