@@ -14,13 +14,19 @@ if platform.system() == 'Windows':
     MYSQL_HOST = "localhost"
     MYSQL_DATABASE = "baidu"
 
+LOCAL_DEBUG_HOST = "192.168.54.9:8000"
+
 PRODUCT_ARTICEL_URL = "http://iam007.cn/index.php/14-product-category/%s-%s"
 NEWS_ARTICEL_URL = "http://iam007.cn/index.php/detail/%s-%s"
 EVALUATION_ARTICEL_URL = "http://iam007.cn/index.php/evaluation/item/%s-%s"
 
 PRODUCT_ARTICEL_URL = "http://iam007.cn:801/iam007/apis/article?contentid=%s"
 if platform.system() == 'Windows':
-    PRODUCT_ARTICEL_URL = "http://192.168.54.9:8000/iam007/apis/article?contentid=%s"
+    PRODUCT_ARTICEL_URL = "http://"+LOCAL_DEBUG_HOST+"/iam007/apis/article?contentid=%s"
+
+PRODUCT_DETAIL_URL = "http://iam007.cn:801/iam007/apis/product?id=%s"
+if platform.system() == 'Windows':
+    PRODUCT_DETAIL_URL = "http://"+LOCAL_DEBUG_HOST+"/iam007/apis/product?id=%s"
 
 """
 select erji_content.id, erji_content.title, erji_tz_portfolio_xref_content.images, c.buy_url from erji_content, erji_tz_portfolio_xref_content, (select erji_content.id, products.buy_url from erji_content, products where erji_content.state=1 and erji_content.title = products.product_name and erji_content.catid=14) c where erji_content.id = erji_tz_portfolio_xref_content.id and erji_content.id = c.id;
@@ -261,18 +267,37 @@ def article():
 
     return "error"
 
+# 获取某个商品的图文详情界面
+def product():
+    global dal
+    preTime = time.time()
+    _init()
+    parseRequest()
+    productId = int(request.vars.get("id", -1))
+    if productId == -1:
+        return ""
+
+    command = 'select `product_detail` from jd_products a where a.id=%s;'%productId
+    products = dal.executesql(command)
+    if len(products) > 0:
+        html_parser = HTMLParser.HTMLParser()
+        articleDetail = html_parser.unescape(products[0][0])
+        return dict(content=XML(products[0][0]))
+
+    return "error"
+
 def plugin():
     """
     helloworld = {
       "id": "helloworld",                      # plugin unique id
       "name":"helloworld test 1",              # plugin name
       "desc":"this is a plugin test example!", # plugin description
-      "icon":"http://192.168.54.9:8000/iam007/static/helloworld.png", # plugin icon
+      "icon":"http://"+LOCAL_DEBUG_HOST+"/iam007/static/helloworld.png", # plugin icon
       # plugin files
       #"files": [{
       #  "id": "helloworld",
       "md5": "e4cd74bcdae8e6dde0d44aad10334f55",
-      "url": "http://192.168.54.9:8000/iam007/static/sample.helloworld.apk",
+      "url": "http://"+LOCAL_DEBUG_HOST+"/iam007/static/sample.helloworld.apk",
       "type":"1", # plugin type, useless current
       "forceUpdate": False, # 该版本是否需要强制更新
       #}],
@@ -304,7 +329,7 @@ def plugin():
 
     fileFormat = 'http://iam007.cn:801/iam007/static/plugins/%s/%s'
     if platform.system() == 'Windows':
-        fileFormat = 'http://192.168.54.9:8000/iam007/static/plugins/%s/%s'
+        fileFormat = 'http://"+LOCAL_DEBUG_HOST+"/iam007/static/plugins/%s/%s'
 
     command = 'select * from plugins_android where state=1'
     plugins = dal.executesql(command)
@@ -423,7 +448,7 @@ def getProducts():
         product_json['priceTag'] = product_price_tag
         product_json['buyUrl'] = convertBuyUrl(buy_url)
         product_json['source'] = 1
-        product_json['detail'] = "http://www.baidu.com"
+        product_json['detail'] = PRODUCT_DETAIL_URL%_id
         products_list.append(product_json)
 
     result = {}
