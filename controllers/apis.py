@@ -435,7 +435,7 @@ def getProducts():
     limit = int(request.vars.get("limit", 20))
     pn = int(request.vars.get("pn", 0))
 
-    command = 'select `id`, product_id, product_name, product_title, product_cover_img, product_price, product_price_tag, buy_url from jd_products limit %d, %d;'%(pn*limit, limit)
+    command = 'select `id`, product_id, product_name, product_title, product_cover_img, product_price, product_price_tag, buy_url from jd_products where state=1 limit %d, %d;'%(pn*limit, limit)
     products = dal.executesql(command)
     products_list = []
     for product in products:
