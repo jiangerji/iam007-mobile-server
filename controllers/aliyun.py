@@ -9,7 +9,7 @@ MYSQL_PASSPORT = "jiangerji"
 MYSQL_PASSWORD = "eMBWzH5SIFJw5I4c"
 MYSQL_DATABASE = "iam007"
 
-APIS_HOST = "http://123.57.77.122:801"
+APIS_HOST = "http://123.57.77.122:802/iam007"
 if platform.system() == 'Windows':
     APIS_HOST = "http://192.168.54.9:8000/iam007"
 
