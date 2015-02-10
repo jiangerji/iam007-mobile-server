@@ -54,7 +54,6 @@ def tags():
         jsonTag["id"] = tag[0]      # tag id
         jsonTag["icon"] = tag[1]    # tag icon
         jsonTag["icon"] = _getTagsStaticFile(tag[1])#"http://123.57.77.122/static/wx_200.jpg"
-        print os.getcwd()
         jsonTag["name"] = tag[2]    # tag readable name
         jsonTag["slug"] = tag[3]    # tag alias
         jsonTag["count"] = tag[4]   # tag 
@@ -63,6 +62,48 @@ def tags():
     result["data"] = jsonTags
 
     print "tags cost:", (time.time() - preTime)
+    return json.dumps(result)
+
+def recommend():
+    # 获取所有推荐列表
+    global dal
+    _init()
+    print parseRequest()
+
+    # 获取热门的tags
+    hotTagsCommand = "select b.name from wp_term_taxonomy a join wp_terms b on a.taxonomy='post_tag' and b.term_id=a.term_id order by a.count desc limit 0, 5"
+    _hotTags = list(dal.executesql(hotTagsCommand))
+    _hotTags = map(lambda x: x[0], _hotTags)
+    hotTags = []
+    for i in _hotTags:
+        hotTags.append(i.encode("utf8"))
+
+    """
+    select e.name, a.post_id, b.post_title, f.meta_value  from wp_postmeta a join wp_posts b on a.meta_key='hot' and a.meta_value='1' and b.ID=a.post_id join wp_term_relationships c on c.object_id=a.post_id join wp_term_taxonomy d on d.term_taxonomy_id=c.term_taxonomy_id join wp_terms e on d.term_id = e.term_id and e.name='智能客厅' join wp_postmeta f on f.post_id=b.ID and f.meta_key='focus_image_value';
+    """
+    commandFormat = "select e.name, a.post_id, b.post_title, f.meta_value, g.meta_value from wp_postmeta a join wp_posts b on a.meta_key='hot' and a.meta_value='1' and b.ID=a.post_id join wp_term_relationships c on c.object_id=a.post_id join wp_term_taxonomy d on d.term_taxonomy_id=c.term_taxonomy_id join wp_terms e on d.term_id = e.term_id and e.name='%s' join wp_postmeta f on f.post_id=b.ID and f.meta_key='focus_image_value' left join wp_postmeta g on g.post_id=b.ID and g.meta_key='referenceurl';"
+
+    result = {}
+    result['error'] = 0
+    resultData = []
+    for tag in hotTags:
+        command = commandFormat%tag
+        recommendSkus = dal.executesql(command)
+
+        data = {}
+        data['name'] = tag
+        skuDatas = []
+        for sku in recommendSkus:
+            skuData = {}
+            skuData['postId'] = sku[1]
+            skuData['title'] = sku[2]
+            skuData['icon'] = sku[3]
+            skuData['ref'] = sku[4]
+            skuDatas.append(skuData)
+        data['data'] = skuDatas
+        resultData.append(data)
+    result['data'] = resultData
+
     return json.dumps(result)
 
 def parseRequest():
