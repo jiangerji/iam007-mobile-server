@@ -1,0 +1,29 @@
+{
+ "baidumusic":{
+    "id":468623917,
+    "name":"百度音乐",
+    "icon60":"http://a1915.phobos.apple.com/us/r30/Purple3/v4/c1/4e/c8/c14ec8a3-c7cb-47ae-fd14-9abdb4909ee6/AppIcon57x57.png",
+    "icon512":"http://a1386.phobos.apple.com/us/r30/Purple3/v4/24/ff/f0/24fff040-32a6-0365-9ec0-4b248a39ce4f/mzl.lvnsajre.png"
+ },
+
+ "com.wemomo.game.sw":{
+    "id":952142928,
+    "name":"十冷手游",
+    "icon60":"http://a330.phobos.apple.com/us/r30/Purple3/v4/4c/a3/bb/4ca3bb38-3937-a486-b04c-ef6ef3ab35bb/Icon.png",
+    "icon512":"http://a1302.phobos.apple.com/us/r30/Purple5/v4/71/00/f0/7100f054-2274-8235-a217-59690b54368c/mzl.yzjqkgmo.jpg"
+ },
+
+ "openApp.jdMobile":{
+    "id":414245413,
+    "name":"京东",
+    "icon60":"http://a1006.phobos.apple.com/us/r30/Purple1/v4/eb/6d/cd/eb6dcd26-e4a6-426c-f1ba-ce38543b2b66/AppIcon57x57.png",
+    "icon512":"http://a898.phobos.apple.com/us/r30/Purple1/v4/21/ea/68/21ea68f3-d7ea-2273-bdec-d38686ffc89d/mzl.rzmmlfie.png"
+ },
+
+ "openApp.jdiPad":{
+    "id":414245413,
+    "name":"京东",
+    "icon60":"http://a1006.phobos.apple.com/us/r30/Purple1/v4/eb/6d/cd/eb6dcd26-e4a6-426c-f1ba-ce38543b2b66/AppIcon57x57.png",
+    "icon512":"http://a898.phobos.apple.com/us/r30/Purple1/v4/21/ea/68/21ea68f3-d7ea-2273-bdec-d38686ffc89d/mzl.rzmmlfie.png"
+ }
+}
