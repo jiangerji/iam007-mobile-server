@@ -61,7 +61,7 @@ def update():
         print cmd
         dal.executesql(cmd)
         print "commit", dal.commit()
-        
+
     logger.info("\t%s"%str(isExist))
     return json.dumps({"result":isExist})
 
@@ -135,6 +135,89 @@ def checkUpdate():
         content = json.load(_getTagsStaticFile("scheme/extSchemeApps_%d_%d.json"%(int(maxVersion), int(appSchemeJsonVersion))))
         result = {"result":True, "data":content, "schemeJsonVersion":maxVersion}
         return json.dumps(result)
+
+
+def task():
+    global dal, APIS_HOST
+    preTime = time.time()
+    _init()
+    print "init cost:", (time.time() - preTime)
+    preTime = time.time()
+    parseRequest()
+
+    action = request.vars.get("action")
+    appleid = request.vars.get("id")
+    trackid = request.vars.get("trackid")
+
+    # debug
+    # trackid = '9585078694'
+    # appleid = "jiangerji"
+    # action = 'get'
+
+    print request.vars
+
+    result = {}
+
+    (_BLANK, _MY_OWNER, _OTHER_OWNER, _PARAMS_ERROR) = (0, 1, 2, -1)
+
+    state = _BLANK
+    if action is None or trackid is None or appleid is None:
+        state = _PARAMS_ERROR
+    elif action == "get":
+        # action=get&trackid=111&appleid=111
+        # 领取任务, 检查是否已经被自己领取了
+        alreadyInTask = False
+        cmd = 'select trackid, owner from taskstate where trackid=%s;'%trackid
+        try:
+            rr = dal.executesql(cmd)
+            print rr
+            if len(rr) > 0:
+                # 任务已经被领取
+                alreadyInTask = True
+
+                # 是否被自己领取
+                if rr[0][1] == appleid:
+                    state = _MY_OWNER # 自己领取
+                else:
+                    state = _OTHER_OWNER # 别人领取
+            else:
+                # 无人领取
+                state = _BLANK
+
+        except Exception, e:
+            pass
+
+        if state == _BLANK:
+            # 无人领取，
+            cmd = 'insert into taskstate (trackid, state, owner, timestamp) VALUES ("%s", %s, "%s", "%s")'%(trackid, 1, appleid, time.strftime("%Y_%m_%d_%H_%M_%S"))
+            dal.executesql(cmd)
+    elif action == "complete":
+        # action=complete&trackid=111&appleid=111&scheme=aaa.aaa.aaa:vv:vvs
+        scheme = request.vars.get("scheme")
+        print "scheme is ", scheme
+        if (scheme is None) or (len(scheme.strip()) == 0):
+            state = _PARAMS_ERROR # 参数错误
+        else:
+            # 完成任务
+            # 从taskstate中删除
+            cmd = 'delete from taskstate where trackid=%s'%trackid
+            dal.executesql(cmd)
+            print "delete from taskstate"
+
+            # 插入到task表中
+            cmd = 'insert into task (trackid, scheme, owner, timestamp) VALUES ("%s", "%s", "%s", "%s")'%(trackid, scheme, appleid, time.strftime("%Y_%m_%d_%H_%M_%S"))
+            dal.executesql(cmd)
+            print "insert into task"
+
+            # 插入到appstores表中
+            cmd = 'update appstores set scheme="%s" where trackid=%s;'%(scheme, trackid)
+            dal.executesql(cmd)
+            print "insert into appstores"
+
+            dal.commit()
+
+    result["result"] = state
+    return json.dumps(result)
 
 
 def parseRequest():
