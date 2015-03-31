@@ -3,6 +3,7 @@ import os
 import time
 import platform
 import HTMLParser
+from logutil import logger
 
 MYSQL_HOST     = "jiangerji.mysql.rds.aliyuncs.com"
 MYSQL_PASSPORT = "jiangerji"
@@ -31,6 +32,73 @@ def _getTagsStaticFile(filename):
     filePath = os.path.join(filePath, "static")
     filePath = os.path.join(filePath, filename)
     return open(filePath, "r")
+
+def update():
+    # 更新app scheme, trackid=1111&scheme=com.a.a.a.a:com.a.a.a
+    global dal, APIS_HOST
+    preTime = time.time()
+    _init()
+    print "init cost:", (time.time() - preTime)
+    preTime = time.time()
+    parseRequest()
+
+    trackid = request.vars.get("trackid")
+    scheme = request.vars.get("scheme")
+
+    logger.info("update")
+    logger.info("\t%s"%str(request.vars))
+
+    if trackid is None or scheme is None:
+        return "parameter error!"
+
+    # 必须是scheme为空
+    cmd = 'select scheme from appstores where trackid="%s"'%trackid
+    schemeIn = dal.executesql(cmd)[0][0]
+    isExist = (schemeIn is None) or (len(schemeIn.strip()) == 0)
+    
+    if isExist:
+        cmd = 'update appstores set scheme="%s" where trackid=%s;'%(scheme, trackid)
+        print cmd
+        dal.executesql(cmd)
+        print "commit", dal.commit()
+        
+    logger.info("\t%s"%str(isExist))
+    return json.dumps({"result":isExist})
+
+def getUnhandleApps():
+    # 获取没有处理的应用信息
+    global dal, APIS_HOST
+    preTime = time.time()
+    _init()
+    print "init cost:", (time.time() - preTime)
+    preTime = time.time()
+    parseRequest()
+
+    # limit=20&index=1
+    limit = 20
+    index = 0
+    if request.vars.has_key("index"):
+        try:
+            index = int(request.vars.get("index"))
+        except Exception, e:
+            pass
+
+        if index < 0:
+            index = 0
+        
+    cmd = "select trackid, name, icon60, icon512 from appstores where scheme is null limit %d offset %d;"%(limit, index*limit)
+    result = dal.executesql(cmd)
+    apps = []
+    for app in result:
+        trackid, name, icon60, icon512 = app
+        appInfo = {}
+        appInfo["trackid"] = trackid
+        appInfo["name"] = name
+        appInfo["icon60"] = icon60
+        appInfo["icon512"] = icon512
+        appInfo["url"] = "https://itunes.apple.com/cn/app/id%s?mt=8"%trackid
+        apps.append(appInfo)
+    return json.dumps({"data":apps})
 
 def checkUpdate():
     global dal, APIS_HOST
