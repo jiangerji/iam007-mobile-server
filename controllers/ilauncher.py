@@ -96,7 +96,7 @@ def getUnhandleApps():
         appInfo["name"] = name
         appInfo["icon60"] = icon60
         appInfo["icon512"] = icon512
-        appInfo["url"] = "https://itunes.apple.com/cn/app/id%s?mt=8"%trackid
+        appInfo["url"] = "https://itunes.apple.com/app/id%s?mt=8"%trackid
         apps.append(appInfo)
     return json.dumps({"data":apps})
 
