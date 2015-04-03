@@ -5,6 +5,8 @@ import platform
 import HTMLParser
 from logutil import logger
 
+import threading
+
 MYSQL_HOST     = "jiangerji.mysql.rds.aliyuncs.com"
 MYSQL_PASSPORT = "jiangerji"
 MYSQL_PASSWORD = "eMBWzH5SIFJw5I4c"
@@ -26,12 +28,16 @@ def _init():
         command = "mysql://%s:%s@%s/%s"%(MYSQL_PASSPORT, MYSQL_PASSWORD, MYSQL_HOST, MYSQL_DATABASE)
         dal = DAL(command)
 
-def _getTagsStaticFile(filename):
+def _getTagsStaticFile(filename, mode="r", returnMode="content"):
     filePath = os.path.join(os.getcwd(), "applications")
     filePath = os.path.join(filePath, "iam007")
     filePath = os.path.join(filePath, "static")
     filePath = os.path.join(filePath, filename)
-    return open(filePath, "r")
+
+    if returnMode == "path":
+        return filePath
+
+    return open(filePath, mode)
 
 def update():
     # 更新app scheme, trackid=1111&scheme=com.a.a.a.a:com.a.a.a
@@ -136,6 +142,53 @@ def checkUpdate():
         result = {"result":True, "data":content, "schemeJsonVersion":maxVersion}
         return json.dumps(result)
 
+def _commitThread(content):
+    filePath = _getTagsStaticFile(".update"+os.path.sep+"commit_%d.json"%long(time.time()), returnMode="path")
+    commitFile = open(os.path.abspath(filePath), "w")
+    commitFile.write(content)
+    commitFile.close()
+    
+    spiderPath = "E:\\git\\iam007-spider\\AppStore\\AppStoreSpider.py"
+    cmd = 'python "%s" update "%s"'%(spiderPath, filePath)
+    # os.system(cmd.encode("utf-8"))
+    
+    # global dal
+    # _init()
+        
+    # for trackid in content.keys():
+    #     try:
+    #         schemes = ":".join(content.get(trackid))
+    #         cmd = 'select count(*) from appstores where trackid="%s";'%trackid
+    #         if dal.executesql(cmd)[0][0] > 0:
+    #             # 已经存在，更新
+    #             cmd = 'update appstores set scheme="%s" where trackid="%s";'%(schemes, trackid)
+    #             dal.executesql(cmd)
+    #             logger.info("update %s scheme to %s"%(trackid, schemes))
+    #             print "update %s scheme to %s"%(trackid, schemes)
+    #         else:
+    #             # 不存在，获取应用名称和icon，一并插入
+    #             logger.info("insert %s scheme to %s"%(trackid, schemes))
+    #             print "insert %s scheme to %s"%(trackid, schemes)
+    #     except Exception, e:
+    #         pass
+
+    #     dal.commit()
+
+def commit():
+    parseRequest()
+    result = True
+
+    # t1 = threading.Thread(target=_commitThread, args=(request.vars.keys()[0],))
+    # t1.setDaemon(True)
+    # t1.start()
+    try:
+        import CommitManager
+        CommitManager.commit(request.vars.keys()[0])
+    except Exception, e:
+        print e
+    
+
+    return json.dumps({"result":result})
 
 def task():
     global dal, APIS_HOST
