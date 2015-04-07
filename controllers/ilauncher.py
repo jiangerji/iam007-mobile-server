@@ -186,9 +186,18 @@ def commit():
     # t1 = threading.Thread(target=_commitThread, args=(request.vars.keys()[0],))
     # t1.setDaemon(True)
     # t1.start()
+
+    import tempfile
+    filepath = tempfile.mktemp()
+    fp = open(filepath, "w")
+    fp.write(request.vars.keys()[0])
+    fp.close()
+
     try:
-        import CommitManager
-        CommitManager.commit(request.vars.keys()[0], DAL)
+        # import CommitManager
+        # CommitManager.commit(request.vars.keys()[0], DAL)
+        cmd = 'python applications/iam007/modules/Commit.py "%s"'%filepath
+        os.system(cmd)
     except Exception, e:
         print e
     

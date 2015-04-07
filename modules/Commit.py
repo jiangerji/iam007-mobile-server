@@ -5,6 +5,8 @@ import time
 import threading
 import platform
 
+import MySQLdb
+
 import logutil
 # 记录日志对象
 _logger = logutil.getLogger("commit")
@@ -35,20 +37,9 @@ if platform.system() == 'Windows':
     MYSQL_PASSWORD="123456"
     MYSQL_DATABASE="spider"
 
-_dal = None
-
-def _handleThread(DAL):
+def _handleThread():
     _info("============== Start Commit Thread ==============")
-    global _dal, MYSQL_PASSPORT, MYSQL_PASSWORD, MYSQL_HOST, MYSQL_DATABASE, _apps_need_to_handle
-
-    try:
-        _info("Start connect to mysql "+MYSQL_HOST+" "+str(time.time()))
-        if _dal is None:
-            _dal = DAL("mysql://%s:%s@%s/%s"%(MYSQL_PASSPORT, MYSQL_PASSWORD, MYSQL_HOST, MYSQL_DATABASE))
-            # print dir(_dal)
-        _info("=== Create Dal ==="+str(time.time()))
-    except Exception, e:
-        _info("Start Commit Thread Exception:"+str(e))
+    global MYSQL_PASSPORT, MYSQL_PASSWORD, MYSQL_HOST, MYSQL_DATABASE, _apps_need_to_handle
     
     while True:
         _info("=== in while ===%d"%len(_apps_need_to_handle))
@@ -63,25 +54,12 @@ def _handleThread(DAL):
                 _info("--- Handle App ---")
                 _info(appInfo)
                 try:
-                    _handleAppInfo(appInfo)
+                    # _handleAppInfo(appInfo)
+                    pass
                 except Exception, e:
                     _info("_handleAppInfo exception:"+str(e))
                 
-
-            # _mysqlConn.commit()
-
-# APIS_HOST = "http://123.57.77.122:802/iam007"
-# if platform.system() == 'Windows':
-#     APIS_HOST = "http://192.168.54.9:8000/iam007"
-
-# _mysqlConn=MySQLdb.connect(host=MYSQL_HOST, user=MYSQL_PASSPORT, passwd=MYSQL_PASSWORD, db=MYSQL_DATABASE, charset="utf8")
-# print "connect to", MYSQL_HOST
-# _mysqlCur = _mysqlConn.cursor()
-# print "db cursor", _mysqlCur
-
 def _handleAppInfo(appInfo):
-    global _dal
-
     trackid = appInfo.trackid
     schemesStr = ":".join(appInfo.schemes)
     _info("scheme is "+schemesStr)
@@ -89,13 +67,14 @@ def _handleAppInfo(appInfo):
     #"""
     # 是否在数据库中
     cmd = "select scheme from appstores where trackid='%s';"%trackid
-    schemeResult = _dal.executesql(cmd)
+    _mysqlCur.execute(cmd)
+    schemeResult = _mysqlCur.fetchone()
     # _info(trackid + ":" + str(schemeResult))
-    if len(schemeResult) > 0:
+    if schemeResult is not None:
         # 已经在数据库中了，更新scheme
         _info("--- Update Scheme %s ---"%trackid)
         cmd = 'update appstores set scheme="%s", version=-2 where trackid="%s";'%(schemesStr,  trackid)
-        _dal.executesql(cmd)
+        _mysqlCur.execute(cmd)
     else:
         # 不在数据库中
         _info("--- New AppInfo %s---"%trackid)
@@ -110,9 +89,9 @@ def _handleAppInfo(appInfo):
             pass
 
         cmd = 'insert into appstores (trackid, name, scheme, icon60, icon512, addtime, version) values ' + '("%s","%s","%s","%s","%s","%s",-2)'%(trackid, appInfo.name, schemesStr, icon60, icon512, time.strftime("%Y_%m_%d_%H"))
-        _dal.executesql(cmd)
+        _mysqlCur.execute(cmd)
 
-    _dal.commit()
+    _mysqlConn.commit()
     # print "Database Commit!"
     #"""
 
@@ -167,27 +146,9 @@ def _getAppIcon(trackid):
     
     return None
 
-
-def testThreadHandler():
-    _info("testThreadHandler")
-
-
-def commit(content, DAL):
-    global _handle_thread, _apps_need_to_handle
-    if _handle_thread is None:
-        try:
-            _handle_thread = threading.Thread(target=_handleThread, args=(DAL,))
-            _handle_thread.setDaemon(True)
-            _handle_thread.start()
-
-            a = threading.Thread(target=testThreadHandler)
-            a.start()
-        except Exception, e:
-            _info("Commit Exception:"+str(e))
-
+def commit(content):
     appInfos = json.loads(content)
     _info(content)
-    # _info("### Start Commit ###")
 
     trackids = appInfos.keys()
     for trackid in trackids:
@@ -197,11 +158,11 @@ def commit(content, DAL):
 
         _info("--- Add to handle list ---")
         _info(appInfo)
-        _apps_need_to_handle.append(appInfo)
+        _handleAppInfo(appInfo)
 
-    _thread_lock.acquire()
-    _thread_lock.notify()
-    _thread_lock.release()
+    _mysqlConn.commit()
+    _mysqlCur.close()
+    _mysqlConn.close()
 
 class _AppInfo():
     def __init__(self, trackid, name, schemes):
@@ -222,23 +183,17 @@ content = '{\
     "434374726":{"schemes":["homelink"], "name":"掌上链家HD"}\
 }'
 
-
-
-def test(p):
-    print p
-
-def test2(func):
-    func("af")
+_mysqlConn=MySQLdb.connect(host=MYSQL_HOST, user=MYSQL_PASSPORT, passwd=MYSQL_PASSWORD, db=MYSQL_DATABASE, charset="utf8")
+print "connect to", MYSQL_HOST
+_mysqlCur = _mysqlConn.cursor()
+print "db cursor", _mysqlCur
 
 if __name__ == "__main__":
-    # sinaweibosso.3677796771:tencent100273020:openapp.jdipad:wxe75a2e68877315fb
+    import sys
     rootDir = "."
-    # print _getAppIcon("434374726")
-    commit(content)
-    # test2(test)
 
-# import time
-# for i in range(10):
-#     print "================", i
-#     commit(content)
-#     time.sleep(1)
+    filepath = sys.argv[1]
+
+    fp = open(filepath, "r")
+    commit(fp.read())
+    fp.close()
