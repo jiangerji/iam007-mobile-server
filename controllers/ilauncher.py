@@ -188,7 +188,7 @@ def commit():
     # t1.start()
     try:
         import CommitManager
-        CommitManager.commit(request.vars.keys()[0])
+        CommitManager.commit(request.vars.keys()[0], DAL)
     except Exception, e:
         print e
     
