@@ -193,14 +193,18 @@ def commit():
     fp.write(request.vars.keys()[0])
     fp.close()
 
-    try:
-        # import CommitManager
-        # CommitManager.commit(request.vars.keys()[0], DAL)
-        cmd = 'python applications/iam007/modules/Commit.py "%s"'%filepath
-        os.system(cmd)
-    except Exception, e:
-        print e
-    
+    def _commitExecute(filepath):
+        try:
+            # import CommitManager
+            # CommitManager.commit(request.vars.keys()[0], DAL)
+            cmd = 'python applications/iam007/modules/Commit.py "%s"'%filepath
+            os.system(cmd)
+        except Exception, e:
+            print e
+
+    t1 = threading.Thread(target=_commitExecute, args=(filepath,))
+    t1.setDaemon(True)
+    t1.start()
 
     return json.dumps({"result":result})
 
