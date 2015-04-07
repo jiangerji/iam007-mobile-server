@@ -102,7 +102,7 @@ def _getUrlContent(url, cacheFile):
         load_web_page_js_dir = os.path.join(rootDir, "bin")
         load_web_page_js = os.path.join(load_web_page_js_dir, "loadAnnie.js")
         command = 'phantomjs --load-images=false "%s" "%s" "%s"'%(load_web_page_js, url, target_path)
-
+        _info(command)
         state = os.system(command.encode("utf-8"))
         _info("Load Annie page state:%d"%state)
 
