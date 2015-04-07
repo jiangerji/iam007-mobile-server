@@ -3,6 +3,7 @@ import os
 import json
 import time
 import threading
+import platform
 
 # 第三方依赖库
 import MySQLdb
@@ -22,6 +23,9 @@ _apps_need_to_handle = []
 _handle_thread = None
 _thread_lock = threading.Lock()
 
+rootDir = os.path.join(os.getcwd(), "applications")
+rootDir = os.path.join(rootDir, "iam007")
+
 def _handleThread():
     while True:
         if len(_apps_need_to_handle) == 0:
@@ -30,12 +34,18 @@ def _handleThread():
         else:
             while len(_apps_need_to_handle) > 0:
                 appInfo = _apps_need_to_handle.pop(0)
-                # _info("--- Handle App ---")
-                # _info(appInfo)
-                _handleAppInfo(appInfo)
+                _info("--- Handle App ---")
+                _info(appInfo)
+                try:
+                    _handleAppInfo(appInfo)
+                except Exception, e:
+                    _info("  Exception:"+e)
+                
+
+            # _mysqlConn.commit()
 
 _handle_thread = threading.Thread(target=_handleThread)
-_handle_thread.setDaemon(True)
+# _handle_thread.setDaemon(True)
 _handle_thread.start()
 
 # 初始化数据库
@@ -43,6 +53,12 @@ MYSQL_HOST     = "jiangerji.mysql.rds.aliyuncs.com"
 MYSQL_PASSPORT = "jiangerji"
 MYSQL_PASSWORD = "eMBWzH5SIFJw5I4c"
 MYSQL_DATABASE = "spider"
+
+if platform.system() == 'Windows':
+    MYSQL_HOST="localhost"
+    MYSQL_PASSPORT="root"
+    MYSQL_PASSWORD="123456"
+    MYSQL_DATABASE="spider"
 
 # APIS_HOST = "http://123.57.77.122:802/iam007"
 # if platform.system() == 'Windows':
@@ -54,21 +70,89 @@ _mysqlCur = _mysqlConn.cursor()
 def _handleAppInfo(appInfo):
     trackid = appInfo.trackid
     schemesStr = ":".join(appInfo.schemes)
+    #_info("scheme is "+schemesStr)
 
+    #"""
     # 是否在数据库中
     cmd = "select scheme from appstores where trackid='%s'"%trackid
     _mysqlCur.execute(cmd)
     schemeResult = _mysqlCur.fetchone()
-    if schemeResult is not None and schemeResult[0] is not None:
+    # print trackid, schemeResult
+    if schemeResult is not None:
         # 已经在数据库中了，更新scheme
-        _info("--- Update Scheme ---")
-        _info(appInfo)
+        _info("--- Update Scheme %s ---"%trackid)
+        # _info(appInfo)
+        cmd = 'update appstores set scheme="%s", version=-2 where trackid="%s";'%(schemesStr,  trackid)
+        _mysqlCur.execute(cmd)
     else:
         # 不在数据库中
-        _info("--- New AppInfo ---")
-        _info(appInfo)
+        _info("--- New AppInfo %s---"%trackid)
+        # _info(appInfo)
+        cmd = 'insert into appstores (trackid, name, scheme, icon60, icon512, addtime, version) values ' + "(%s,%s,%s,%s,%s,%s,-2)"
+
+        icon60 = None
+        icon512 = None
+        try:
+            icons = _getAppIcon(trackid)
+            if icons is not None:
+                icon60, icon512 = icons
+        except Exception, e:
+            pass
+
+        _mysqlCur.execute(cmd, (trackid, appInfo.name, schemesStr, icon60, icon512, time.strftime("%Y_%m_%d_%H")))
+    _mysqlConn.commit()
+    #"""
+
+def _getUrlContent(url, cacheFile):
+    target_path = cacheFile
+
+    if not os.path.isfile(target_path):
+        load_web_page_js_dir = os.path.join(rootDir, "bin")
+        load_web_page_js = os.path.join(load_web_page_js_dir, "loadAnnie.js")
+        command = 'phantomjs --load-images=false "%s" "%s" "%s"'%(load_web_page_js, url, target_path)
+
+        state = os.system(command.encode("utf-8"))
+        print "Load Annie page state:", state
+
+    return open(target_path).read()
+
+def _getAppIcon(trackid):
+    from lxml import etree
+
+    if trackid is None:
+        return None
+
+    url = "https://itunes.apple.com/cn/app/id%s?mt=8"%trackid
+    cacheDir = os.path.join(rootDir, "cache")
+    cacheDir = os.path.join(cacheDir, "itunes")
+    
+    try:
+        os.makedirs(cacheDir)
+    except Exception, e:
         pass
 
+    cacheFile = os.path.join(cacheDir, "itunes_%s.html"%trackid)
+    content = None
+    try:
+        content = _getUrlContent(url, cacheFile)
+        doc = etree.HTML(content)
+
+        rows = doc.xpath("//div[@id='left-stack']//img[@class='artwork']")
+        for row in rows:
+            icon60 = row.get("src")
+            icon512 = row.get("src-swap-high-dpi")
+
+            return (icon60, icon512)
+    except Exception, e:
+        print "get url content exception:", e
+
+    try:
+        os.remove(cacheFile)
+        _info("remove:"+cacheFile)
+    except Exception, e:
+        _info("remove:"+e)
+    
+    return None
 
 def commit(content):
     appInfos = json.loads(content)
@@ -81,8 +165,8 @@ def commit(content):
         name = appInfos.get(trackid).get("name", None)
         appInfo = _AppInfo(trackid, name, schemes)
 
-        # _info("--- Add to handle list ---")
-        # _info(appInfo)
+        _info("--- Add to handle list ---")
+        _info(appInfo)
         _apps_need_to_handle.append(appInfo)
 
     _thread_lock.release()
@@ -103,11 +187,13 @@ class _AppInfo():
         return "\n".join(result)
 
 content = '{\
-    "932389062":["fb266828356856324asdas", "haha"],\
-    "584246550":["fb266828356856324", "haha1"]\
+    "448654179":{"schemes":["homelink"], "name":"掌上链家HD"}\
 }'
 
 if __name__ == "__main__":
+    # sinaweibosso.3677796771:tencent100273020:openapp.jdipad:wxe75a2e68877315fb
+    rootDir = "."
+    # print _getAppIcon("434374726")
     commit(content)
 # import time
 # for i in range(10):

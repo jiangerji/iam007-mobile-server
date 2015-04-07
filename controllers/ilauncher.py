@@ -15,7 +15,12 @@ MYSQL_DATABASE = "spider"
 APIS_HOST = "http://123.57.77.122:802/iam007"
 if platform.system() == 'Windows':
     APIS_HOST = "http://192.168.54.9:8000/iam007"
+    MYSQL_HOST="localhost"
+    MYSQL_PASSPORT="root"
+    MYSQL_PASSWORD="123456"
+    MYSQL_DATABASE="spider"
 
+    
 dal = None#DAL('sqlite://wanke.sqlite3.sqlite')
 def _init():
     global dal, MYSQL_PASSPORT, MYSQL_PASSWORD, MYSQL_HOST, MYSQL_DATABASE
