@@ -25,11 +25,15 @@ rootDir = os.path.join(rootDir, "iam007")
 
 def _handleThread(DAL):
     global _dal, MYSQL_PASSPORT, MYSQL_PASSWORD, MYSQL_HOST, MYSQL_DATABASE
-    if _dal is None:
-        # cmd = 'DAL("mysql://%s:%s@%s/%s")'%(MYSQL_PASSPORT, MYSQL_PASSWORD, MYSQL_HOST, MYSQL_DATABASE)
-        _dal = DAL("mysql://%s:%s@%s/%s"%(MYSQL_PASSPORT, MYSQL_PASSWORD, MYSQL_HOST, MYSQL_DATABASE))
-        # print dir(_dal)
     _info("============== Start Commit Thread ==============")
+
+    try:
+        if _dal is None:
+            _dal = DAL("mysql://%s:%s@%s/%s"%(MYSQL_PASSPORT, MYSQL_PASSWORD, MYSQL_HOST, MYSQL_DATABASE))
+            # print dir(_dal)
+    except Exception, e:
+        pass
+    
     while True:
         if len(_apps_need_to_handle) == 0:
             _thread_lock.acquire()
