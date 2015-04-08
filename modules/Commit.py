@@ -13,6 +13,7 @@ _logger = logutil.getLogger("commit")
 
 # 打印info级别日志
 def _info(message):
+    # print "info:", message
     _logger.info(message)
 
 # 用于保存需要进行处理的应用的信息
@@ -31,7 +32,7 @@ MYSQL_PASSPORT = "jiangerji"
 MYSQL_PASSWORD = "eMBWzH5SIFJw5I4c"
 MYSQL_DATABASE = "spider"
 
-if platform.system() == 'Windows':
+if platform.system() == 'Windows' and False:
     MYSQL_HOST="localhost"
     MYSQL_PASSPORT="root"
     MYSQL_PASSWORD="123456"
@@ -94,17 +95,39 @@ def _handleAppInfo(appInfo):
     _mysqlConn.commit()
     # print "Database Commit!"
     #"""
-
+import subprocess
 def _getUrlContent(url, cacheFile):
     target_path = cacheFile
 
-    if not os.path.isfile(target_path):
-        load_web_page_js_dir = os.path.join(rootDir, "bin")
-        load_web_page_js = os.path.join(load_web_page_js_dir, "loadAnnie.js")
+    if not os.path.isfile(target_path) or True:
+        load_web_page_js_dir = os.path.realpath(os.path.join(rootDir, "bin"))
+        load_web_page_js = os.path.realpath(os.path.join(load_web_page_js_dir, "loadAnnie.js"))
         command = 'phantomjs --load-images=false "%s" "%s" "%s"'%(load_web_page_js, url, target_path)
         _info(command)
-        state = os.system(command.encode("utf-8"))
-        _info("Load Annie page state:%d"%state)
+
+        out = "1output.txt"
+        outfp = open(out, "a+")
+        errfp = open("1error.txt", "a+")
+        try:
+            p = subprocess.Popen(command, shell=True, stdout=outfp, stderr=errfp)
+            # fp = open("geturl.txt", "w")
+            # fp.write("##### start #####\n")
+
+            # while p.poll() == None:
+            #     line = p.stdout.readline()
+            #     line += p.stderr.readline()
+            #     if len(line) > 0:
+            #         fp.write(line)
+            state = p.wait()
+            # line = p.stdout.read()
+            # line += p.stderr.read()
+            # fp.write(line)
+            # fp.write("\n##### end #####\n")
+            _info("Load Annie page state:%d"%state)
+        except Exception, e:
+            _info("subprocess exception:"+str(e))
+
+        # state = os.system(command.encode("utf-8"))
 
     return open(target_path).read()
 
@@ -191,9 +214,9 @@ print "db cursor", _mysqlCur
 if __name__ == "__main__":
     import sys
     rootDir = "."
-
+    _info("-------- Commit Start --------%d"%int(time.time()))
     filepath = sys.argv[1]
-
     fp = open(filepath, "r")
     commit(fp.read())
     fp.close()
+    _info("-------- Commit Finish--------%d"%int(time.time()))

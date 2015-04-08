@@ -3,6 +3,7 @@ import os
 import time
 import platform
 import HTMLParser
+import subprocess
 from logutil import logger
 
 import threading
@@ -193,18 +194,18 @@ def commit():
     fp.write(request.vars.keys()[0])
     fp.close()
 
-    def _commitExecute(filepath):
-        try:
-            # import CommitManager
-            # CommitManager.commit(request.vars.keys()[0], DAL)
-            cmd = 'python applications/iam007/modules/Commit.py "%s"'%filepath
-            os.system(cmd)
-        except Exception, e:
-            print e
+    try:
+        commitScriptPath = ["applications", "iam007", "modules", "Commit.py"]
+        commitScriptPath = os.path.sep.join(commitScriptPath)
+        cmd = 'python "%s" "%s"'%(commitScriptPath, filepath)
+        # os.system(cmd)
+        subprocess.Popen(cmd, shell=True)
+    except Exception, e:
+        print e
 
-    t1 = threading.Thread(target=_commitExecute, args=(filepath,))
-    t1.setDaemon(True)
-    t1.start()
+    # t1 = threading.Thread(target=_commitExecute, args=(filepath,))
+    # t1.setDaemon(True)
+    # t1.start()
 
     return json.dumps({"result":result})
 
