@@ -53,3 +53,8 @@ docs/_build/
 
 # PyBuilder
 target/
+
+# static
+static/scheme/
+modules/cache/
+static/swglxh/
