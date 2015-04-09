@@ -1,7 +1,7 @@
-{{def itemlink(name, link):}}<li>{{=A(name,_href=link,_target='blank')}}</li>{{return}}
+{{def itemlink(name, link, price):}}<li>{{=A("%s %s"%(name, price),_href=link,_target='blank')}}</li>{{return}}
 
 <ul>
 {{for number in appInfos:}}
-  <h2>{{itemlink(number[0], number[1])}}</h2>
+  <h2>{{itemlink(number[0], number[1], number[2])}}</h2>
 {{pass}}
 </ul>

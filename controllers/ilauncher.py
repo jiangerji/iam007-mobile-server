@@ -14,7 +14,7 @@ MYSQL_PASSWORD = "eMBWzH5SIFJw5I4c"
 MYSQL_DATABASE = "spider"
 
 APIS_HOST = "http://123.57.77.122:802/iam007"
-if platform.system() == 'Windows':
+if platform.system() == 'Windows' and False:
     APIS_HOST = "http://192.168.54.9:8000/iam007"
     MYSQL_HOST="localhost"
     MYSQL_PASSPORT="root"
@@ -300,11 +300,10 @@ def unhandle():
     preTime = time.time()
     parseRequest()
 
-    cmd = 'select name, trackid from appstores where scheme is null;'
+    cmd = 'select name, trackid, price from appstores where scheme is null;'
     result = dal.executesql(cmd)
 
-    result = map(lambda x: (x[0], "https://itunes.apple.com/cn/app/id%s"%x[1]), result)
-
+    result = map(lambda x: (x[0], "https://itunes.apple.com/cn/app/id%s"%x[1], " %0.2f"%int(x[2])), result)
     return dict(appInfos=result)
 
 
