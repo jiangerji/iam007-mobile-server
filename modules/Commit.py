@@ -63,7 +63,6 @@ def _handleThread():
 def _handleAppInfo(appInfo):
     trackid = appInfo.trackid
     schemesStr = ":".join(appInfo.schemes)
-    _info("scheme is "+schemesStr)
 
     #"""
     # 是否在数据库中
@@ -73,13 +72,29 @@ def _handleAppInfo(appInfo):
     # _info(trackid + ":" + str(schemeResult))
     if schemeResult is not None:
         # 已经在数据库中了，更新scheme
-        _info("--- Update Scheme %s ---"%trackid)
-        cmd = 'update appstores set scheme="%s", version=-2 where trackid="%s";'%(schemesStr,  trackid)
-        _mysqlCur.execute(cmd)
+
+        schemeSrc = schemeResult[0]
+        needUpdate = True
+        if schemeSrc is not None:
+            schemeSrcList = set(schemeSrc.split(":"))
+            if schemeSrcList == set(appInfo.schemes):
+                needUpdate = False
+
+        if needUpdate:
+            _info("--- Update Scheme %s ---"%trackid)
+            _info(appInfo)
+            _info("    scheme is "+schemesStr)
+            cmd = 'update appstores set scheme="%s", version=-2 where trackid="%s";'%(schemesStr,  trackid)
+            _mysqlCur.execute(cmd)
+            _mysqlConn.commit()
+        else:
+            # _info("--- No need to update ---")
+            pass
     else:
         # 不在数据库中
         _info("--- New AppInfo %s---"%trackid)
-
+        _info("    scheme is "+schemesStr)
+        _info(appInfo)
         icon60 = None
         icon512 = None
         try:
@@ -91,8 +106,7 @@ def _handleAppInfo(appInfo):
 
         cmd = 'insert into appstores (trackid, name, scheme, icon60, icon512, addtime, version) values ' + '("%s","%s","%s","%s","%s","%s",-2)'%(trackid, appInfo.name, schemesStr, icon60, icon512, time.strftime("%Y_%m_%d_%H"))
         _mysqlCur.execute(cmd)
-
-    _mysqlConn.commit()
+        _mysqlConn.commit()
     # print "Database Commit!"
     #"""
 import subprocess
@@ -179,8 +193,6 @@ def commit(content):
         name = appInfos.get(trackid).get("name", None)
         appInfo = _AppInfo(trackid, name, schemes)
 
-        _info("--- Add to handle list ---")
-        _info(appInfo)
         _handleAppInfo(appInfo)
 
     _mysqlConn.commit()

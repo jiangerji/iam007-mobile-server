@@ -292,6 +292,22 @@ def task():
     return json.dumps(result)
 
 
+def unhandle():
+    global dal
+    preTime = time.time()
+    _init()
+    print "init cost:", (time.time() - preTime)
+    preTime = time.time()
+    parseRequest()
+
+    cmd = 'select name, trackid from appstores where scheme is null;'
+    result = dal.executesql(cmd)
+
+    result = map(lambda x: (x[0], "https://itunes.apple.com/cn/app/id%s"%x[1]), result)
+
+    return dict(appInfos=result)
+
+
 def parseRequest():
     # 发起请求客户端的操作系统类型
     platform = ""
