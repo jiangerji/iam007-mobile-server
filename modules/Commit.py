@@ -75,14 +75,16 @@ def _handleAppInfo(appInfo):
 
         schemeSrc = schemeResult[0]
         needUpdate = True
+        schemeSrcList = set()
         if schemeSrc is not None:
             schemeSrcList = set(schemeSrc.split(":"))
-            if schemeSrcList == set(appInfo.schemes):
+            if set(appInfo.schemes).issubset(schemeSrcList):
                 needUpdate = False
 
         if needUpdate:
             _info("--- Update Scheme %s ---"%trackid)
             _info(appInfo)
+            schemesStr = ":".join(list(schemeSrcList.union(set(appInfo.schemes))))
             _info("    scheme is "+schemesStr)
             cmd = 'update appstores set scheme="%s", version=-2 where trackid="%s";'%(schemesStr,  trackid)
             _mysqlCur.execute(cmd)

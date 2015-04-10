@@ -4,6 +4,7 @@ import time
 import platform
 import HTMLParser
 import subprocess
+import urllib
 from logutil import logger
 
 import threading
@@ -199,7 +200,11 @@ def commit():
         commitScriptPath = os.path.sep.join(commitScriptPath)
         cmd = 'python "%s" "%s"'%(commitScriptPath, filepath)
         # os.system(cmd)
+
+        params = urllib.urlencode({"file":filepath})
+        cmd = 'wget http://127.0.0.1:9156/commitWithFile?%s'%(params)
         subprocess.Popen(cmd, shell=True)
+
     except Exception, e:
         print e
 
