@@ -311,6 +311,41 @@ def unhandle():
     result = map(lambda x: (x[0], "https://itunes.apple.com/cn/app/id%s"%x[1], " %0.2f"%int(x[2])), result)
     return dict(appInfos=result)
 
+def help():
+    # 帮助页面
+    global dal
+    preTime = time.time()
+    _init()
+    print "init cost:", (time.time() - preTime)
+    preTime = time.time()
+    parseRequest()
+
+    redirect("http://chuye.cloud7.com.cn/3014684")
+    return ""
+
+def about():
+    # 帮助页面
+    global dal
+    preTime = time.time()
+    _init()
+    print "init cost:", (time.time() - preTime)
+    preTime = time.time()
+    parseRequest()
+
+    redirect("http://chuye.cloud7.com.cn/3017283")
+    return ""
+
+def config():
+    content = ""
+    try:
+        print "1"
+        content = json.load(_getTagsStaticFile("AppConfig.json"))
+        print "haha"
+    except Exception, e:
+        print e
+
+    return json.dumps(content)
+
 
 def parseRequest():
     # 发起请求客户端的操作系统类型

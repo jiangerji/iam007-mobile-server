@@ -1,0 +1,22 @@
+{
+    "setting:":{
+        "help":{
+            "name":"帮助",
+            "icon":"http://www.findappname.com:802/iam007/ilauncher/static/help.png",
+            "url":"http://www.findappname.com:802/iam007/ilauncher/help"
+        },
+        "feedback":{
+            "name":"反馈",
+            "icon":"http://www.findappname.com:802/iam007/ilauncher/static/feedback.png",
+            "url":"http://www.findappname.com:802/iam007/ilauncher/feedback"
+        },
+        "about":{
+            "name":"关于",
+            "icon":"http://www.findappname.com:802/iam007/ilauncher/static/about.png",
+            "url":"http://www.findappname.com:802/iam007/ilauncher/about"
+        }
+    },
+    "platform":{
+        "appdetect":true
+    }
+}
