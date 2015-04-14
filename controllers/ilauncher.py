@@ -202,7 +202,7 @@ def commit():
         # os.system(cmd)
 
         params = urllib.urlencode({"file":filepath})
-        cmd = 'wget http://127.0.0.1:9156/commitWithFile?%s'%(params)
+        cmd = 'wget -q http://127.0.0.1:9156/commitWithFile?%s'%(params)
         subprocess.Popen(cmd, shell=True)
 
     except Exception, e:
