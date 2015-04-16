@@ -336,11 +336,27 @@ def about():
     return ""
 
 def config():
+    # 获取应用程序的配置信息
     content = ""
     try:
-        print "1"
         content = json.load(_getTagsStaticFile("AppConfig.json"))
-        print "haha"
+    except Exception, e:
+        print e
+
+    return json.dumps(content)
+
+def guideInstallApp():
+    # QQ，微信, 微博, YY, 陌陌
+    # 网易新闻，
+    # 爱奇艺、腾讯视频，
+    # DOTA传奇，
+    # QQ音乐, 百度音乐
+    # 百度地图，高德地图
+    # 美颜相机
+    # 获取应用程序的配置信息
+    content = ""
+    try:
+        content = json.load(_getTagsStaticFile("guideinstallapp.json"))
     except Exception, e:
         print e
 
