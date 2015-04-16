@@ -134,6 +134,8 @@ def checkUpdate():
     if appSchemeJsonVersion == None or appSchemeJsonVersion > maxVersion:
         appSchemeJsonVersion = 0
 
+    result = {}
+
     if appSchemeJsonVersion == maxVersion:
         # 不需要更新
         return json.dumps({"result":False})
@@ -142,12 +144,22 @@ def checkUpdate():
         # 返回全部的scheme json数据
         content = json.load(_getTagsStaticFile("extSchemeApps.json"))
         result = {"result":True, "data":content, "schemeJsonVersion":maxVersion}
-        return json.dumps(result)
+        
     else:
         # 返回更新增量数据
         content = json.load(_getTagsStaticFile("scheme/extSchemeApps_%d_%d.json"%(int(maxVersion), int(appSchemeJsonVersion))))
         result = {"result":True, "data":content, "schemeJsonVersion":maxVersion}
-        return json.dumps(result)
+
+    cmd = 'select `value` from appconfig where name="forceupdate";'
+    forceUpdate = False
+    try:
+        if int(dal.executesql(command)[0][0]) > 0:
+            forceUpdate = True
+    except Exception, e:
+        pass
+
+    result["forceUpdate"] = forceUpdate
+    return json.dumps(result)
 
 def _commitThread(content):
     filePath = _getTagsStaticFile(".update"+os.path.sep+"commit_%d.json"%long(time.time()), returnMode="path")
