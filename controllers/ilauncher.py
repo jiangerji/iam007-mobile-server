@@ -153,7 +153,8 @@ def checkUpdate():
     cmd = 'select `value` from appconfig where name="forceupdate";'
     forceUpdate = False
     try:
-        if int(dal.executesql(command)[0][0]) > 0:
+        a = dal.executesql(cmd)[0][0]
+        if int(a) > 0:
             forceUpdate = True
     except Exception, e:
         pass
