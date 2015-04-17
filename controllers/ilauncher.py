@@ -138,13 +138,12 @@ def checkUpdate():
 
     if appSchemeJsonVersion == maxVersion:
         # 不需要更新
-        return json.dumps({"result":False})
+        result = {"result":False}
     elif appSchemeJsonVersion == 0:
         # return os.getcwd()
         # 返回全部的scheme json数据
         content = json.load(_getTagsStaticFile("extSchemeApps.json"))
         result = {"result":True, "data":content, "schemeJsonVersion":maxVersion}
-        
     else:
         # 返回更新增量数据
         content = json.load(_getTagsStaticFile("scheme/extSchemeApps_%d_%d.json"%(int(maxVersion), int(appSchemeJsonVersion))))
@@ -337,7 +336,7 @@ def help():
     return ""
 
 def about():
-    # 帮助页面
+    # 关于页面
     global dal
     preTime = time.time()
     _init()
