@@ -317,7 +317,20 @@ def unhandle():
     preTime = time.time()
     parseRequest()
 
+    appType = None
+    if request.vars.has_key("type"):
+        appType = request.vars.get("type")
+
+    if appType is None:
+        appType = "all"
+
     cmd = 'select name, trackid, price from appstores where scheme is null;'
+
+    if appType == "charge":
+        cmd = 'select name, trackid, price from appstores where scheme is null and price > 0;'
+    elif appType == "free":
+        cmd = 'select name, trackid, price from appstores where scheme is null and price <= 0;'
+
     result = dal.executesql(cmd)
 
     result = map(lambda x: (x[0], "https://itunes.apple.com/cn/app/id%s"%x[1], " %0.2f"%int(x[2])), result)
