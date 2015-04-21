@@ -159,6 +159,7 @@ def checkUpdate():
         pass
 
     result["forceUpdate"] = forceUpdate
+    result["url"] = "https://itunes.apple.com/cn/app/id414478124?mt=8";
     return json.dumps(result)
 
 def _commitThread(content):
