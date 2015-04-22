@@ -172,7 +172,7 @@ def checkVersion():
 
     version = None
     if request.vars.has_key("version"):
-        version = int(request.vars.get("version"))
+        version = request.vars.get("version")
         print "version is:", version
 
     result = {}
@@ -182,9 +182,9 @@ def checkVersion():
         cmd = 'select `value` from appconfig where name="appversion";'
 
         try:
-            latestVersion = int(dal.executesql(cmd)[0][0])
+            latestVersion = dal.executesql(cmd)[0][0]
             print "latestVersion is:", latestVersion
-            if latestVersion == int(version):
+            if latestVersion == version:
                 needUpdate = False
         except Exception, e:
             pass
