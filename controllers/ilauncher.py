@@ -149,17 +149,61 @@ def checkUpdate():
         content = json.load(_getTagsStaticFile("scheme/extSchemeApps_%d_%d.json"%(int(maxVersion), int(appSchemeJsonVersion))))
         result = {"result":True, "data":content, "schemeJsonVersion":maxVersion}
 
+    # cmd = 'select `value` from appconfig where name="forceupdate";'
+    # forceUpdate = False
+    # try:
+    #     a = dal.executesql(cmd)[0][0]
+    #     if int(a) > 0:
+    #         forceUpdate = True
+    # except Exception, e:
+    #     pass
+
+    # result["forceUpdate"] = forceUpdate
+    # result["url"] = "https://itunes.apple.com/cn/app/id414478124?mt=8";
+    return json.dumps(result)
+
+def checkVersion():
+    global dal, APIS_HOST
+    preTime = time.time()
+    _init()
+    print "checkVersion init cost:", (time.time() - preTime)
+    preTime = time.time()
+    parseRequest()
+
+    version = None
+    if request.vars.has_key("version"):
+        version = int(request.vars.get("version"))
+        print "version is:", version
+
+    result = {}
+
+    needUpdate = True
+    if version is not None:
+        cmd = 'select `value` from appconfig where name="appversion";'
+
+        try:
+            latestVersion = int(dal.executesql(cmd)[0][0])
+            print "latestVersion is:", latestVersion
+            if latestVersion == int(version):
+                needUpdate = False
+        except Exception, e:
+            pass
+
+    result["update"] = needUpdate
+
     cmd = 'select `value` from appconfig where name="forceupdate";'
     forceUpdate = False
-    try:
-        a = dal.executesql(cmd)[0][0]
-        if int(a) > 0:
-            forceUpdate = True
-    except Exception, e:
-        pass
+    if needUpdate:
+        try:
+            a = dal.executesql(cmd)[0][0]
+            if int(a) > 0:
+                forceUpdate = True
+        except Exception, e:
+            pass
 
-    result["forceUpdate"] = forceUpdate
-    result["url"] = "https://itunes.apple.com/cn/app/id414478124?mt=8";
+        result["forceUpdate"] = forceUpdate
+        result["url"] = "https://itunes.apple.com/cn/app/id414478124?mt=8";
+
     return json.dumps(result)
 
 def _commitThread(content):
