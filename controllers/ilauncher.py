@@ -189,6 +189,8 @@ def checkVersion():
         except Exception, e:
             pass
 
+    # 暂时为false
+    needUpdate = False
     result["update"] = needUpdate
 
     cmd = 'select `value` from appconfig where name="forceupdate";'
@@ -405,6 +407,18 @@ def about():
     redirect("http://chuye.cloud7.com.cn/3017283")
     return ""
 
+def support():
+    # 技术支持页面，提交app store使用
+    global dal
+    preTime = time.time()
+    _init()
+    print "init cost:", (time.time() - preTime)
+    preTime = time.time()
+    parseRequest()
+
+    redirect("http://chuye.cloud7.com.cn/3014794")
+    return ""
+
 def config():
     # 获取应用程序的配置信息
     content = ""
@@ -431,6 +445,59 @@ def guideInstallApp():
         print e
 
     return json.dumps(content)
+
+def appConfig():
+    # app配置的后台界面
+    if request.vars.has_key("key"):
+        os = request.vars.get("key")
+        if os is not None and os == "963852741":
+            pass
+        else:
+            return "haha"
+    else:
+        return "hah"
+
+    forms = []
+
+    configs = [
+        {
+            "name": "应用程序版本号",
+            "key": "appVersion",
+            "requires": None
+        },
+        {
+            "name": "是否需要强制更新",
+            "key": "forceUpdate",
+            "requires": None
+        },
+        {
+            "name": "应用程序itunes地址",
+            "key": "url",
+            "requires": None
+        }
+    ]
+
+    for config in configs:
+        requiresFunc = IS_NOT_EMPTY
+
+        form = FORM(config.get("name"),
+                  INPUT(_name=config.get("key"), requires=requiresFunc()),
+                  INPUT(_type='submit'))
+
+        forms.append(form)
+
+        if form.accepts(request,session):
+            request.sResult = 'form accepted'
+            print request.sResult, str(form)
+        elif form.errors:
+            response.sResult = 'form has errors'
+            print request.sResult, str(form)
+        else:
+            response.sResult = 'please fill the form'
+            print request.sResult, str(form)
+
+
+    return dict(forms=forms)
 
 
 def parseRequest():
