@@ -99,17 +99,18 @@ def getUnhandleApps():
         if index < 0:
             index = 0
         
-    cmd = "select trackid, name, icon60, icon512 from appstores where scheme is null limit %d offset %d;"%(limit, index*limit)
+    cmd = "select trackid, name, icon60, icon512, price from appstores where ipadonly=0 and scheme is null limit %d offset %d;"%(limit, index*limit)
     result = dal.executesql(cmd)
     apps = []
     for app in result:
-        trackid, name, icon60, icon512 = app
+        trackid, name, icon60, icon512, price = app
         appInfo = {}
         appInfo["trackid"] = trackid
         appInfo["name"] = name
         appInfo["icon60"] = icon60
         appInfo["icon512"] = icon512
         appInfo["url"] = "https://itunes.apple.com/app/id%s?mt=8"%trackid
+        appInfo["price"] = price
         apps.append(appInfo)
     return json.dumps({"data":apps})
 
