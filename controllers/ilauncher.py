@@ -205,8 +205,10 @@ def checkVersion():
             pass
 
         result["forceUpdate"] = forceUpdate
-        result["url"] = "https://itunes.apple.com/cn/app/id414478124?mt=8";
+        result["url"] = "https://itunes.apple.com/cn/app/id988742317?mt=8";
 
+
+    result["shake"] = False # shake the icon when in edit mode
     return json.dumps(result)
 
 def _commitThread(content):
