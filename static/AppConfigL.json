@@ -1,0 +1,17 @@
+{
+    "setting:":{
+        "help":{
+            "name":"帮助",
+            "icon":"http://www.findappname.com:802/iam007/static/app/help.png",
+            "url":"http://chuye.cloud7.com.cn/5304123"
+        },
+        "about":{
+            "name":"关于",
+            "icon":"http://www.findappname.com:802/iam007/static/app/about.png",
+            "url":"http://chuye.cloud7.com.cn/3017283"
+        }
+    },
+    "platform":{
+        "appdetect":true
+    }
+}
