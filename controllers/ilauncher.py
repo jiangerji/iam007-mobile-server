@@ -432,6 +432,16 @@ def config():
 
     return json.dumps(content)
 
+def configL():
+    # 获取应用程序的配置信息
+    content = ""
+    try:
+        content = json.load(_getTagsStaticFile("AppConfigL.json"))
+    except Exception, e:
+        print e
+
+    return json.dumps(content)
+
 def guideInstallApp():
     # QQ，微信, 微博, YY, 陌陌
     # 网易新闻，
