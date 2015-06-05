@@ -395,7 +395,7 @@ def help():
     preTime = time.time()
     parseRequest()
 
-    redirect("http://chuye.cloud7.com.cn/3014684")
+    redirect("http://chuye.cloud7.com.cn/5304123")
     return ""
 
 def about():
