@@ -191,7 +191,7 @@ def checkVersion():
             pass
 
     # 暂时为false
-    needUpdate = False
+    # needUpdate = False
     result["update"] = needUpdate
 
     cmd = 'select `value` from appconfig where name="forceupdate";'
