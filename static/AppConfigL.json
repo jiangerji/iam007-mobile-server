@@ -13,7 +13,9 @@
         "praise":{
             "name":"赞一下",
             "icon":"http://www.findappname.com:802/iam007/static/app/praise.png",
-            "url":"http://click.hm.baidu.com/app.gif?ap=78353&ch=22326"
+            "url":"http://click.hm.baidu.com/app.gif?ap=78353&ch=22326",
+            "action":1
+
         }
     },
     "platform":{
