@@ -434,9 +434,16 @@ def config():
 
 def configL():
     # 获取应用程序的配置信息
+    debugMode = False
+    if request.vars.has_key("debug"):
+        debugMode = True
+
     content = ""
     try:
-        content = json.load(_getTagsStaticFile("AppConfigL.json"))
+        if debugMode:
+            content = json.load(_getTagsStaticFile("AppConfigL_debug.json"))
+        else:
+            content = json.load(_getTagsStaticFile("AppConfigL.json"))
     except Exception, e:
         print e
 
